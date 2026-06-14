@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2f7d5a">
+<title>Трекер сбережений</title>
+<style>
+:root{
+  --bg:#f7faf9; --card:#fff; --soft:#edf6f2; --soft2:#f4faf7;
+  --text:#14362c; --muted:#66857a; --line:#dcebe6;
+  --green:#2f7d5a; --green2:#64a999; --red:#ef3b3b; --orange:#e59a2f;
+  --shadow:0 14px 32px rgba(27,53,44,.12);
+  --radius:28px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Arial,sans-serif;
+  padding-bottom:96px;
+}
+.app{max-width:760px;margin:0 auto;padding:18px 14px 24px}
+.top{
+  background:rgba(255,255,255,.96);border:1px solid var(--line);
+  border-radius:28px;padding:22px 22px 24px;
+  box-shadow:0 8px 20px rgba(20,54,44,.05);
+}
+.topRow{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+h1{font-size:30px;line-height:1.05;margin:0 0 6px;font-weight:900;letter-spacing:-.6px}
+h2{font-size:24px;line-height:1.1;margin:0 0 16px;font-weight:900;letter-spacing:-.4px}
+h3{font-size:18px;margin:0 0 8px;font-weight:850}
+p{margin:0}.sub{font-size:17px;color:var(--muted);line-height:1.35}
+.iconBtn{
+  width:54px;height:54px;border-radius:16px;background:var(--soft2);
+  display:grid;place-items:center;border:0;color:var(--text);font-size:22px;
+}
+.goalCard{
+  margin-top:22px;min-height:205px;
+  background:linear-gradient(135deg,#eaf4ef 0%,#f6fbf8 55%,#e3eee9 100%);
+  border-radius:24px;padding:26px;position:relative;overflow:hidden;
+}
+.goalCard:after{
+  content:"↗";position:absolute;right:30px;top:38px;font-size:110px;line-height:1;
+  color:rgba(20,54,44,.08);font-weight:900;
+}
+.goalTitle{font-size:27px;font-weight:900;position:relative;z-index:1}
+.goalAmount{font-size:25px;color:var(--muted);margin-top:12px;position:relative;z-index:1}
+.savedLine{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-top:24px;position:relative;z-index:1}
+.savedBig{font-size:24px;font-weight:850}.percent{font-size:23px;font-weight:900;margin-top:5px}
+.leftBox{text-align:left;color:var(--muted);font-size:20px;max-width:190px}.leftBox b{display:block;color:var(--muted);font-size:24px;margin-top:4px}
+.progress{height:16px;background:#cfe1da;border-radius:999px;margin-top:22px;overflow:hidden;position:relative;z-index:1}
+.progressFill{height:100%;width:0;background:var(--green);border-radius:999px;transition:.25s}
+.quickGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:18px}
+.quickCard{
+  background:#fff;border:1px solid rgba(220,235,230,.95);box-shadow:0 9px 22px rgba(20,54,44,.08);
+  border-radius:22px;padding:18px;display:flex;align-items:center;gap:13px;min-height:88px;
+}
+.quickIcon{width:42px;height:42px;border-radius:14px;border:2px solid var(--muted);display:grid;place-items:center;font-size:22px;color:var(--muted)}
+.quickCard span{display:block;font-size:16px;color:var(--muted);margin-bottom:5px}.quickCard b{font-size:18px}
+.card{
+  background:var(--card);border:1px solid rgba(220,235,230,.95);
+  border-radius:var(--radius);box-shadow:var(--shadow);
+  padding:22px;margin-top:22px;overflow:hidden;
+}
+.statsList .row{
+  display:flex;justify-content:space-between;align-items:center;gap:18px;
+  padding:18px 0;border-bottom:1px solid var(--line);font-size:20px;
+}
+.statsList .row:last-child{border-bottom:0}.statsList .label{color:var(--muted)}.statsList .value{font-weight:850;text-align:right}
+.good{color:#47be5e!important}.bad{color:var(--red)!important}
+.statusPill{display:inline-flex;align-items:center;justify-content:center;min-width:135px;height:38px;border-radius:999px;padding:0 14px;background:#e8f7ed;color:#29974a;font-weight:850;font-size:15px}
+.statusPill.bad{background:#ffeded;color:var(--red)!important}
+.tabs{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;
+  background:rgba(255,255,255,.96);border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(5,1fr);
+  padding:8px 8px calc(8px + env(safe-area-inset-bottom));
+  box-shadow:0 -8px 28px rgba(20,54,44,.08);
+}
+.tabBtn{border:0;background:transparent;color:#647b76;padding:8px 2px 6px;border-radius:16px;font-size:12px;font-weight:650}
+.tabBtn .ico{display:block;font-size:24px;line-height:1;margin-bottom:4px}.tabBtn.active{color:var(--green)}
+.tabBtn.active:after{content:"";display:block;height:3px;width:52px;background:var(--green);border-radius:99px;margin:7px auto 0}
+.page{display:none}.page.active{display:block}
+.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{display:block;color:var(--muted);font-size:14px;margin:12px 0 7px}
+input,select,textarea{
+  width:100%;border:1px solid var(--line);background:#fff;border-radius:14px;
+  padding:14px 13px;font-size:17px;color:var(--text);outline:none;
+}
+textarea{min-height:80px;resize:vertical}
+.mainBtn{width:100%;border:0;background:linear-gradient(135deg,#2f7d5a,#1f6d48);color:#fff;font-size:19px;font-weight:900;border-radius:16px;padding:16px;margin-top:18px;box-shadow:0 10px 22px rgba(47,125,90,.24)}
+.ghostBtn{width:100%;border:1px solid var(--line);background:#fff;color:var(--text);font-size:17px;font-weight:850;border-radius:16px;padding:14px;margin-top:12px}
+.danger{background:#fff1f1;color:#b42323;border:1px solid #ffd3d3;box-shadow:none}
+.entry{
+  border:1px solid var(--line);border-radius:22px;padding:18px;margin-top:12px;background:#fff;
+  display:flex;justify-content:space-between;gap:14px;align-items:flex-start;
+}
+.entryAmount{font-size:24px;font-weight:900}.entryMeta{font-size:17px;color:var(--muted);margin-top:6px;line-height:1.35}
+.entryBase{text-align:right;font-weight:850;color:var(--green);white-space:nowrap}.smallDel{border:0;background:#f6f8f7;color:#789088;border-radius:12px;padding:8px 10px;margin-top:10px;font-weight:800}
+.chartBox{height:300px;margin-top:10px}.chartLegend{display:flex;gap:18px;justify-content:center;font-size:18px;color:var(--muted);margin-bottom:8px}
+.legendDot{display:inline-block;width:16px;height:16px;border-radius:3px;margin-right:6px;vertical-align:-2px}
+.tableWrap{overflow-x:auto;margin:0 -22px}.yearTable{min-width:670px;width:100%;border-collapse:collapse;font-size:18px}
+.yearTable th,.yearTable td{padding:16px 12px;border-bottom:1px solid var(--line);text-align:left}.yearTable th{color:var(--muted);font-weight:700}
+.miniBar{width:95px;height:14px;background:#dbeae5;border-radius:99px;overflow:hidden}.miniBar span{display:block;height:100%;background:var(--green)}
+.kpiGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.kpi{background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px;min-height:120px}
+.kpi span{display:block;color:var(--muted);font-size:18px}.kpi b{display:block;font-size:34px;margin-top:16px}
+.donutWrap{display:grid;place-items:center;min-height:300px}
+.donut{width:220px;height:220px;border-radius:50%;background:conic-gradient(var(--green) 0deg,var(--green2) 0deg,#dfeae6 0deg);display:grid;place-items:center}
+.donutInner{width:142px;height:142px;border-radius:50%;background:#fff;display:grid;place-items:center;text-align:center}.donutInner b{font-size:26px}.donutInner span{display:block;color:var(--muted);font-size:14px;margin-top:3px}
+.currencyTools{display:grid;grid-template-columns:1fr 155px;gap:12px;align-items:end;margin-bottom:14px}
+.currencyCard{display:grid;grid-template-columns:54px 1.2fr 1fr 115px 36px;gap:12px;align-items:center;border:1px solid var(--line);border-radius:20px;padding:14px;margin-top:10px;background:#fff}
+.flag{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:#f4f8f6;font-size:28px;border:1px solid var(--line)}
+.code{font-size:20px;font-weight:900}.name{font-size:15px;color:var(--muted);margin-top:3px}.rateLabel{font-size:13px;color:var(--muted);margin-bottom:5px}.rateInput{padding:10px 11px;font-size:16px}
+.updated{font-size:13px;color:var(--muted);line-height:1.25}.more{border:0;background:transparent;color:#647b76;font-size:26px}.hint{font-size:14px;color:var(--muted);line-height:1.4;margin-top:10px}
+.searchLine{display:grid;grid-template-columns:1fr 150px;gap:12px}
+@media(max-width:580px){
+  .app{padding:14px 12px 20px}.top{padding:18px 18px 22px;border-radius:24px}h1{font-size:28px}
+  .goalCard{padding:22px 20px}.goalTitle{font-size:26px}.savedLine{align-items:flex-start}.leftBox{font-size:18px;max-width:145px}.leftBox b{font-size:21px}
+  .quickGrid,.formGrid,.kpiGrid{grid-template-columns:1fr 1fr;gap:12px}.quickCard{padding:15px;min-height:84px}.quickIcon{display:none}
+  .statsList .row{font-size:18px}.currencyCard{grid-template-columns:46px 1fr;gap:10px}
+  .currencyCard .rateWrap,.currencyCard .updated,.currencyCard .more{grid-column:2}.flag{width:42px;height:42px;font-size:24px}
+  .currencyTools,.searchLine{grid-template-columns:1fr}
+}
+@media(max-width:380px){.quickGrid,.formGrid,.kpiGrid{grid-template-columns:1fr}.tabBtn{font-size:11px}.tabBtn .ico{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <section id="page-home" class="page active">
+    <div class="top">
+      <div class="topRow"><div><h1>Обзор сбережений</h1><p class="sub">Ваша финансовая подушка безопасности.</p></div><button class="iconBtn" type="button">♧</button></div>
+      <div class="goalCard">
+        <div class="goalTitle">Цель: <span id="homeGoalName">квартира</span></div>
+        <div class="goalAmount" id="homeGoalAmount">3 000 000 ₴</div>
+        <div class="savedLine"><div><div class="savedBig">Накоплено: <span id="homeSaved">0 ₴</span></div><div class="percent" id="homePercent">(0%)</div></div><div class="leftBox">Осталось:<b id="homeLeft">0 ₴</b></div></div>
+        <div class="progress"><div class="progressFill" id="homeProgress"></div></div>
+      </div>
+      <div class="quickGrid">
+        <div class="quickCard"><div class="quickIcon">▣</div><div><span>Период</span><b id="homePeriod">—</b></div></div>
+        <div class="quickCard"><div class="quickIcon">◷</div><div><span>Длительность</span><b id="homeDuration">—</b></div></div>
+        <div class="quickCard"><div class="quickIcon">▥</div><div><span>План в месяц</span><b id="homeMonthPlan">—</b></div></div>
+        <div class="quickCard"><div class="quickIcon">◔</div><div><span>План в год</span><b id="homeYearPlan">—</b></div></div>
+      </div>
+    </div>
+    <div class="card statsList">
+      <h2>Статистика</h2>
+      <div class="row"><span class="label">Заполнено месяцев:</span><span class="value" id="filledMonths">0</span></div>
+      <div class="row"><span class="label">Осталось месяцев:</span><span class="value" id="leftMonths">0</span></div>
+      <div class="row"><span class="label">Среднее пополнение/мес.:</span><span class="value" id="avgMonth">0</span></div>
+      <div class="row"><span class="label">Лучший месяц:</span><span class="value" id="bestMonth">—</span></div>
+      <div class="row"><span class="label">Прогноз завершения:</span><span class="value" id="forecast">—</span></div>
+      <div class="row"><span class="label">Отклонение от плана:</span><span class="value" id="deviation">0</span></div>
+      <div class="row"><span class="label">Последнее пополнение:</span><span class="value" id="lastTopup">—</span></div>
+      <div class="row"><span class="label">Статус плана:</span><span class="statusPill" id="planStatus">—</span></div>
+    </div>
+    <div class="card"><h2>Итоги по годам</h2><div class="tableWrap"><table class="yearTable" id="yearTable"></table></div></div>
+    <div class="card"><h2>Факт vs План по годам</h2><div class="chartLegend"><span><i class="legendDot" style="background:var(--green2)"></i>Факт</span><span><i class="legendDot" style="background:var(--green)"></i>План</span></div><div class="chartBox" id="yearBars"></div></div>
+  </section>
+
+  <section id="page-add" class="page">
+    <div class="top"><h1>Добавить пополнение</h1><p class="sub">Выберите любую валюту и курс пересчёта вручную.</p></div>
+    <div class="card">
+      <label>Сумма пополнения</label><input id="txAmount" type="number" inputmode="decimal" placeholder="Например 100000">
+      <div class="formGrid"><div><label>Валюта</label><select id="txCurrency"></select></div><div><label id="txRateLabel">Курс к валюте цели</label><input id="txRate" type="number" inputmode="decimal" step="0.000001" placeholder="1"></div></div>
+      <label>Дата</label><input id="txDate" type="date">
+      <label>Комментарий</label><textarea id="txNote" placeholder="Зарплата, бонус, обмен валюты..."></textarea>
+      <button class="mainBtn" type="button" id="addTxBtn">+ Добавить пополнение</button>
+      <p class="hint">Сумма в цели считается так: сумма пополнения × курс выбранной валюты.</p>
+    </div>
+    <div class="card"><h2>Быстрое добавление</h2><div class="formGrid"><button class="ghostBtn" type="button" data-fast="10000">+10 000</button><button class="ghostBtn" type="button" data-fast="50000">+50 000</button><button class="ghostBtn" type="button" data-fast="100000">+100 000</button><button class="ghostBtn" type="button" data-fast="500000">+500 000</button></div></div>
+    <div class="card"><h2>Последние пополнения</h2><div id="recentAdd"></div></div>
+  </section>
+
+  <section id="page-stats" class="page">
+    <div class="top"><h1>Статистика</h1><p class="sub">Графики, динамика, валюты и крупные пополнения.</p></div>
+    <div class="card"><h2>Динамика пополнений</h2><p class="sub">Сумма сбережений по месяцам</p><div class="chartBox" id="lineChart"></div></div>
+    <div class="card"><h2>По валютам</h2><div class="donutWrap"><div class="donut" id="currencyDonut"><div class="donutInner"><div><b id="donutTotal">0</b><span>всего</span></div></div></div></div><div id="currencyBreakdown"></div></div>
+    <div class="kpiGrid"><div class="kpi"><span>Всего записей</span><b id="totalRecords">0</b></div><div class="kpi"><span>Самое крупное пополнение</span><b id="biggestTx">0</b></div></div>
+  </section>
+
+  <section id="page-currencies" class="page">
+    <div class="top"><h1>Курсы валют</h1><p class="sub">Установите актуальные курсы вручную. Валюта цели: <b id="baseCurrencyLabel">UAH</b>.</p></div>
+    <div class="card">
+      <div class="searchLine"><div><label>Поиск валюты</label><input id="currencySearch" placeholder="Например USD, EUR, HUF, гривна..."></div><div><label>Фильтр</label><select id="currencyFilter"><option value="active">Мои валюты</option><option value="all">Все валюты</option></select></div></div>
+      <div class="currencyTools"><div><label>Добавить валюту из списка</label><select id="addCurrencySelect"></select></div><button class="mainBtn" type="button" id="addCurrencyBtn" style="margin-top:0">+ Добавить</button></div>
+      <div id="currencyList"></div>
+      <p class="hint">Курс вводится в формате: 1 выбранная валюта = сколько в валюте цели. Например, если цель в UAH и 1 HUF = 0.11 UAH, введите 0.11.</p>
+    </div>
+  </section>
+
+  <section id="page-settings" class="page">
+    <div class="top"><h1>Настройки</h1><p class="sub">Цель, период, валюта и данные приложения.</p></div>
+    <div class="card">
+      <h2>Цель</h2>
+      <label>Название цели</label><input id="goalNameInput" placeholder="Квартира">
+      <div class="formGrid"><div><label>Сумма цели</label><input id="goalAmountInput" type="number" inputmode="decimal" placeholder="3000000"></div><div><label>Валюта цели</label><select id="goalCurrencyInput"></select></div></div>
+      <div class="formGrid"><div><label>Начало периода</label><input id="startDateInput" type="date"></div><div><label>Конец периода</label><input id="endDateInput" type="date"></div></div>
+      <button class="mainBtn" type="button" id="saveGoalBtn">Сохранить цель</button>
+    </div>
+    <div class="card">
+      <h2>Данные</h2>
+      <button class="ghostBtn" type="button" id="downloadBtn">Сохранить резервную копию</button>
+      <button class="ghostBtn" type="button" id="resetDemoBtn">Вернуть пример как на скриншоте</button>
+      <button class="mainBtn danger" type="button" id="clearBtn">Очистить все пополнения</button>
+      <p class="hint">Данные сохраняются только в браузере на этом телефоне. Без онлайн-сервера синхронизации между телефонами не будет.</p>
+    </div>
+  </section>
+</div>
+
+<nav class="tabs">
+  <button class="tabBtn active" type="button" data-tab="home"><span class="ico">⌂</span>Главная</button>
+  <button class="tabBtn" type="button" data-tab="add"><span class="ico">⊕</span>Пополнения</button>
+  <button class="tabBtn" type="button" data-tab="stats"><span class="ico">▥</span>Статистика</button>
+  <button class="tabBtn" type="button" data-tab="currencies"><span class="ico">$</span>Валюты</button>
+  <button class="tabBtn" type="button" data-tab="settings"><span class="ico">⚙</span>Настройки</button>
+</nav>
+
+<script>
+const CURRENCIES=[
+["AED","Дирхам ОАЭ","🇦🇪"],["AFN","Афганский афгани","🇦🇫"],["ALL","Албанский лек","🇦🇱"],["AMD","Армянский драм","🇦🇲"],["ANG","Нидерландский антильский гульден","🇨🇼"],["AOA","Ангольская кванза","🇦🇴"],["ARS","Аргентинское песо","🇦🇷"],["AUD","Австралийский доллар","🇦🇺"],["AWG","Арубанский флорин","🇦🇼"],["AZN","Азербайджанский манат","🇦🇿"],["BAM","Конвертируемая марка Боснии","🇧🇦"],["BBD","Барбадосский доллар","🇧🇧"],["BDT","Бангладешская така","🇧🇩"],["BGN","Болгарский лев","🇧🇬"],["BHD","Бахрейнский динар","🇧🇭"],["BIF","Бурундийский франк","🇧🇮"],["BMD","Бермудский доллар","🇧🇲"],["BND","Брунейский доллар","🇧🇳"],["BOB","Боливийский боливиано","🇧🇴"],["BRL","Бразильский реал","🇧🇷"],["BSD","Багамский доллар","🇧🇸"],["BTN","Бутанский нгултрум","🇧🇹"],["BWP","Ботсванская пула","🇧🇼"],["BYN","Белорусский рубль","🇧🇾"],["BZD","Белизский доллар","🇧🇿"],["CAD","Канадский доллар","🇨🇦"],["CDF","Конголезский франк","🇨🇩"],["CHF","Швейцарский франк","🇨🇭"],["CLP","Чилийское песо","🇨🇱"],["CNY","Китайский юань","🇨🇳"],["COP","Колумбийское песо","🇨🇴"],["CRC","Коста-риканский колон","🇨🇷"],["CUP","Кубинское песо","🇨🇺"],["CVE","Эскудо Кабо-Верде","🇨🇻"],["CZK","Чешская крона","🇨🇿"],["DJF","Франк Джибути","🇩🇯"],["DKK","Датская крона","🇩🇰"],["DOP","Доминиканское песо","🇩🇴"],["DZD","Алжирский динар","🇩🇿"],["EGP","Египетский фунт","🇪🇬"],["ERN","Эритрейская накфа","🇪🇷"],["ETB","Эфиопский быр","🇪🇹"],["EUR","Евро","🇪🇺"],["FJD","Доллар Фиджи","🇫🇯"],["FKP","Фунт Фолклендских островов","🇫🇰"],["GBP","Фунт стерлингов","🇬🇧"],["GEL","Грузинский лари","🇬🇪"],["GHS","Ганский седи","🇬🇭"],["GIP","Гибралтарский фунт","🇬🇮"],["GMD","Гамбийский даласи","🇬🇲"],["GNF","Гвинейский франк","🇬🇳"],["GTQ","Гватемальский кетсаль","🇬🇹"],["GYD","Гайанский доллар","🇬🇾"],["HKD","Гонконгский доллар","🇭🇰"],["HNL","Гондурасская лемпира","🇭🇳"],["HTG","Гаитянский гурд","🇭🇹"],["HUF","Венгерский форинт","🇭🇺"],["IDR","Индонезийская рупия","🇮🇩"],["ILS","Израильский шекель","🇮🇱"],["INR","Индийская рупия","🇮🇳"],["IQD","Иракский динар","🇮🇶"],["IRR","Иранский риал","🇮🇷"],["ISK","Исландская крона","🇮🇸"],["JMD","Ямайский доллар","🇯🇲"],["JOD","Иорданский динар","🇯🇴"],["JPY","Японская иена","🇯🇵"],["KES","Кенийский шиллинг","🇰🇪"],["KGS","Кыргызский сом","🇰🇬"],["KHR","Камбоджийский риель","🇰🇭"],["KMF","Коморский франк","🇰🇲"],["KRW","Южнокорейская вона","🇰🇷"],["KWD","Кувейтский динар","🇰🇼"],["KZT","Казахстанский тенге","🇰🇿"],["LAK","Лаосский кип","🇱🇦"],["LBP","Ливанский фунт","🇱🇧"],["LKR","Шри-ланкийская рупия","🇱🇰"],["LYD","Ливийский динар","🇱🇾"],["MAD","Марокканский дирхам","🇲🇦"],["MDL","Молдавский лей","🇲🇩"],["MGA","Малагасийский ариари","🇲🇬"],["MKD","Македонский денар","🇲🇰"],["MMK","Мьянманский кьят","🇲🇲"],["MNT","Монгольский тугрик","🇲🇳"],["MOP","Патака Макао","🇲🇴"],["MRU","Мавританская угия","🇲🇷"],["MUR","Маврикийская рупия","🇲🇺"],["MVR","Мальдивская руфия","🇲🇻"],["MWK","Малавийская квача","🇲🇼"],["MXN","Мексиканское песо","🇲🇽"],["MYR","Малайзийский ринггит","🇲🇾"],["MZN","Мозамбикский метикал","🇲🇿"],["NAD","Намибийский доллар","🇳🇦"],["NGN","Нигерийская найра","🇳🇬"],["NIO","Никарагуанская кордоба","🇳🇮"],["NOK","Норвежская крона","🇳🇴"],["NPR","Непальская рупия","🇳🇵"],["NZD","Новозеландский доллар","🇳🇿"],["OMR","Оманский риал","🇴🇲"],["PAB","Панамский бальбоа","🇵🇦"],["PEN","Перуанский соль","🇵🇪"],["PGK","Кина Папуа — Новой Гвинеи","🇵🇬"],["PHP","Филиппинское песо","🇵🇭"],["PKR","Пакистанская рупия","🇵🇰"],["PLN","Польский злотый","🇵🇱"],["PYG","Парагвайский гуарани","🇵🇾"],["QAR","Катарский риал","🇶🇦"],["RON","Румынский лей","🇷🇴"],["RSD","Сербский динар","🇷🇸"],["RUB","Российский рубль","🇷🇺"],["RWF","Руандийский франк","🇷🇼"],["SAR","Саудовский риял","🇸🇦"],["SCR","Сейшельская рупия","🇸🇨"],["SDG","Суданский фунт","🇸🇩"],["SEK","Шведская крона","🇸🇪"],["SGD","Сингапурский доллар","🇸🇬"],["SYP","Сирийский фунт","🇸🇾"],["THB","Таиландский бат","🇹🇭"],["TJS","Таджикский сомони","🇹🇯"],["TND","Тунисский динар","🇹🇳"],["TRY","Турецкая лира","🇹🇷"],["TWD","Новый тайваньский доллар","🇹🇼"],["UAH","Украинская гривна","🇺🇦"],["USD","Доллар США","🇺🇸"],["UYU","Уругвайское песо","🇺🇾"],["UZS","Узбекский сум","🇺🇿"],["VND","Вьетнамский донг","🇻🇳"],["XAF","Центральноафриканский франк CFA","🌍"],["XOF","Западноафриканский франк CFA","🌍"],["YER","Йеменский риал","🇾🇪"],["ZAR","Южноафриканский ранд","🇿🇦"],["ZMW","Замбийская квача","🇿🇲"]
+];
+const byCode=Object.fromEntries(CURRENCIES.map(c=>[c[0],{code:c[0],name:c[1],flag:c[2]}]));
+const symbols={UAH:"₴",HUF:"Ft",USD:"$",EUR:"€",GBP:"£",PLN:"zł",JPY:"¥",CNY:"¥",CHF:"CHF",CAD:"C$",AUD:"A$"};
+const MONTHS=["янв.","фев.","мар.","апр.","мая","июн.","июл.","авг.","сен.","окт.","ноя.","дек."];
+const KEY="savingsTrackerReplitStyleV1";
+function demoState(){return {goal:{name:"квартира",amount:3000000,currency:"UAH",start:"2026-04-01",end:"2032-03-31"},rates:{UAH:1,HUF:0.135,USD:41.2,EUR:44.5,GBP:52.1,PLN:10.4},activeCurrencies:["UAH","HUF","USD","EUR","GBP","PLN"],tx:[{amount:100000,currency:"HUF",date:"2026-06-14",note:"Пополнение"},{amount:100000,currency:"UAH",date:"2026-06-10",note:"Пополнение"},{amount:200000,currency:"HUF",date:"2026-05-10",note:"Пополнение"},{amount:450000,currency:"HUF",date:"2026-04-10",note:"Пополнение"}]};}
+let state=loadState();
+function loadState(){const raw=localStorage.getItem(KEY);if(!raw){const s=demoState();localStorage.setItem(KEY,JSON.stringify(s));return s;}try{return JSON.parse(raw)}catch(e){return demoState()}}
+function saveState(){localStorage.setItem(KEY,JSON.stringify(state))}
+function n(v){return Number(v)||0}
+function fmtMoney(v,c=state.goal.currency){const sym=symbols[c]||c;const rounded=Math.round(n(v)*100)/100;return rounded.toLocaleString("ru-RU",{maximumFractionDigits:2})+" "+sym}
+function fmtDate(iso){if(!iso)return "—";const d=new Date(iso+"T00:00:00");return d.getDate()+" "+MONTHS[d.getMonth()]+" "+d.getFullYear()}
+function monthKey(iso){return iso?iso.slice(0,7):""}
+function monthLabel(key){if(!key)return "—";const [y,m]=key.split("-").map(Number);return MONTHS[m-1]+" "+y}
+function addMonths(date,months){const d=new Date(date);d.setMonth(d.getMonth()+months);return d}
+function monthsBetween(start,end){const a=new Date(start+"T00:00:00"),b=new Date(end+"T00:00:00");return Math.max(1,(b.getFullYear()-a.getFullYear())*12+(b.getMonth()-a.getMonth())+1)}
+function txBase(t){return n(t.amount)*n(state.rates[t.currency]??(t.currency===state.goal.currency?1:0))}
+function totalSaved(){return state.tx.reduce((s,t)=>s+txBase(t),0)}
+function sortedTx(){return [...state.tx].sort((a,b)=>new Date(b.date)-new Date(a.date))}
+function monthlyTotals(){const map={};state.tx.forEach(t=>{const k=monthKey(t.date);if(k)map[k]=(map[k]||0)+txBase(t)});return map}
+function yearlyBuckets(){const start=new Date(state.goal.start+"T00:00:00");const totalMonths=monthsBetween(state.goal.start,state.goal.end);const years=Math.ceil(totalMonths/12);const yearlyPlan=state.goal.amount/years;const rows=[];for(let i=0;i<years;i++){const ys=addMonths(start,i*12),ye=addMonths(start,(i+1)*12);const fact=state.tx.reduce((sum,t)=>{const d=new Date(t.date+"T00:00:00");return (d>=ys&&d<ye)?sum+txBase(t):sum},0);rows.push({year:"Год "+(i+1),fact,plan:yearlyPlan,dev:fact-yearlyPlan,pct:yearlyPlan?fact/yearlyPlan*100:0})}return rows}
+function expectedToDate(){const start=new Date(state.goal.start+"T00:00:00"),today=new Date();const totalMonths=monthsBetween(state.goal.start,state.goal.end);const monthPlan=state.goal.amount/totalMonths;const elapsed=Math.max(0,Math.min(totalMonths,(today.getFullYear()-start.getFullYear())*12+(today.getMonth()-start.getMonth())+1));return elapsed*monthPlan}
+function setTab(id){document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));document.getElementById("page-"+id).classList.add("active");document.querySelectorAll(".tabBtn").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));window.scrollTo({top:0,behavior:"instant"});location.hash=id}
+function fillSelect(select,selected){select.innerHTML=CURRENCIES.map(c=>`<option value="${c[0]}" ${c[0]===selected?"selected":""}>${c[2]} ${c[0]} — ${c[1]}</option>`).join("")}
+function setup(){fillSelect(document.getElementById("txCurrency"),"HUF");fillSelect(document.getElementById("addCurrencySelect"),"EUR");fillSelect(document.getElementById("goalCurrencyInput"),state.goal.currency);document.querySelectorAll(".tabBtn").forEach(btn=>{btn.addEventListener("click",()=>setTab(btn.dataset.tab));btn.addEventListener("touchend",(e)=>{e.preventDefault();setTab(btn.dataset.tab)},{passive:false})});document.getElementById("addTxBtn").addEventListener("click",addTransaction);document.getElementById("txCurrency").addEventListener("change",syncTxRate);document.getElementById("addCurrencyBtn").addEventListener("click",addActiveCurrency);document.getElementById("currencySearch").addEventListener("input",renderCurrencies);document.getElementById("currencyFilter").addEventListener("change",renderCurrencies);document.getElementById("saveGoalBtn").addEventListener("click",saveGoal);document.getElementById("clearBtn").addEventListener("click",clearTransactions);document.getElementById("resetDemoBtn").addEventListener("click",resetDemo);document.getElementById("downloadBtn").addEventListener("click",downloadBackup);document.querySelectorAll("[data-fast]").forEach(b=>b.addEventListener("click",()=>{document.getElementById("txAmount").value=b.dataset.fast;addTransaction()}));document.getElementById("txDate").value=new Date().toISOString().slice(0,10);const hash=location.hash.replace("#","");if(hash&&document.getElementById("page-"+hash))setTab(hash);syncTxRate();render()}
+function syncTxRate(){const c=document.getElementById("txCurrency").value;document.getElementById("txRateLabel").textContent=`Курс ${c} → ${state.goal.currency}`;document.getElementById("txRate").value=state.rates[c]??(c===state.goal.currency?1:"")}
+function addTransaction(){const amount=n(document.getElementById("txAmount").value);if(!amount){alert("Введите сумму пополнения");return}const currency=document.getElementById("txCurrency").value;const rate=n(document.getElementById("txRate").value);if(!rate){alert("Введите курс валюты");return}state.rates[currency]=rate;if(!state.activeCurrencies.includes(currency))state.activeCurrencies.push(currency);state.tx.unshift({amount,currency,date:document.getElementById("txDate").value||new Date().toISOString().slice(0,10),note:document.getElementById("txNote").value||"Пополнение"});document.getElementById("txAmount").value="";document.getElementById("txNote").value="";saveState();render();setTab("home")}
+function deleteTx(i){if(confirm("Удалить это пополнение?")){state.tx.splice(i,1);saveState();render()}}
+function addActiveCurrency(){const c=document.getElementById("addCurrencySelect").value;if(!state.activeCurrencies.includes(c))state.activeCurrencies.push(c);if(state.rates[c]===undefined)state.rates[c]=(c===state.goal.currency?1:0);saveState();renderCurrencies()}
+function removeCurrency(c){if(c===state.goal.currency){alert("Валюту цели удалить нельзя");return}state.activeCurrencies=state.activeCurrencies.filter(x=>x!==c);saveState();renderCurrencies()}
+function updateRate(c,val){state.rates[c]=n(val);saveState();render()}
+function saveGoal(){const oldCurrency=state.goal.currency;state.goal.name=document.getElementById("goalNameInput").value||"цель";state.goal.amount=n(document.getElementById("goalAmountInput").value);state.goal.currency=document.getElementById("goalCurrencyInput").value;state.goal.start=document.getElementById("startDateInput").value;state.goal.end=document.getElementById("endDateInput").value;if(!state.activeCurrencies.includes(state.goal.currency))state.activeCurrencies.unshift(state.goal.currency);state.rates[state.goal.currency]=1;saveState();if(oldCurrency!==state.goal.currency)alert("Валюта цели изменена. Проверьте курсы на вкладке «Валюты».");render();setTab("home")}
+function clearTransactions(){if(confirm("Очистить все пополнения?")){state.tx=[];saveState();render()}}
+function resetDemo(){if(confirm("Вернуть пример данных как на скриншоте?")){state=demoState();saveState();render();setTab("home")}}
+function downloadBackup(){const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="savings-backup.json";a.click();URL.revokeObjectURL(a.href)}
+function render(){const saved=totalSaved(),left=Math.max(0,state.goal.amount-saved),pct=state.goal.amount?Math.min(100,saved/state.goal.amount*100):0;document.getElementById("homeGoalName").textContent=state.goal.name;document.getElementById("homeGoalAmount").textContent=fmtMoney(state.goal.amount,state.goal.currency);document.getElementById("homeSaved").textContent=fmtMoney(saved);document.getElementById("homePercent").textContent=`(${Math.round(pct)}%)`;document.getElementById("homeLeft").textContent=fmtMoney(left);document.getElementById("homeProgress").style.width=pct+"%";const totalMonths=monthsBetween(state.goal.start,state.goal.end);const years=Math.max(1,Math.round(totalMonths/12));const monthPlan=state.goal.amount/totalMonths;const yearPlan=state.goal.amount/years;document.getElementById("homePeriod").textContent=`${monthLabel(monthKey(state.goal.start))} → ${monthLabel(monthKey(state.goal.end))}`;document.getElementById("homeDuration").textContent=`${totalMonths} мес. / ${years} лет`;document.getElementById("homeMonthPlan").textContent=fmtMoney(monthPlan);document.getElementById("homeYearPlan").textContent=fmtMoney(yearPlan);const monthMap=monthlyTotals();const filled=Object.keys(monthMap).length;document.getElementById("filledMonths").textContent=filled;document.getElementById("leftMonths").textContent=Math.max(0,totalMonths-filled);document.getElementById("avgMonth").textContent=fmtMoney(filled?saved/filled:0);const best=Object.entries(monthMap).sort((a,b)=>b[1]-a[1])[0];document.getElementById("bestMonth").textContent=best?`${monthLabel(best[0])} (${fmtMoney(best[1])})`:"—";const last=sortedTx()[0];document.getElementById("lastTopup").textContent=last?monthKey(last.date):"—";const avg=filled?saved/filled:0;document.getElementById("forecast").textContent=avg?monthLabel(monthKey(addMonths(new Date(),Math.ceil(left/avg)).toISOString().slice(0,10))):"—";const dev=saved-expectedToDate();const devEl=document.getElementById("deviation");devEl.textContent=(dev>=0?"+":"")+fmtMoney(dev);devEl.className="value "+(dev>=0?"good":"bad");const st=document.getElementById("planStatus");st.textContent=dev>=0?"Впереди плана":"Ниже плана";st.className="statusPill "+(dev>=0?"":"bad");renderYearTable();renderYearBars();renderLineChart();renderDonut();renderRecent();renderCurrencies();renderSettings()}
+function renderSettings(){document.getElementById("goalNameInput").value=state.goal.name;document.getElementById("goalAmountInput").value=state.goal.amount;fillSelect(document.getElementById("goalCurrencyInput"),state.goal.currency);document.getElementById("startDateInput").value=state.goal.start;document.getElementById("endDateInput").value=state.goal.end;document.getElementById("baseCurrencyLabel").textContent=state.goal.currency}
+function renderYearTable(){const rows=yearlyBuckets();let html="<tr><th>Год</th><th>Факт</th><th>План</th><th>Отклонение</th><th>% плана</th></tr>";rows.forEach(r=>{html+=`<tr><td>${r.year}</td><td>${fmtMoney(r.fact)}</td><td>${fmtMoney(r.plan)}</td><td class="${r.dev>=0?"good":"bad"}">${r.dev>=0?"+":""}${fmtMoney(r.dev)}</td><td>${Math.round(r.pct)}% <div class="miniBar"><span style="width:${Math.min(100,r.pct)}%"></span></div></td></tr>`});document.getElementById("yearTable").innerHTML=html}
+function renderYearBars(){const rows=yearlyBuckets();const max=Math.max(...rows.flatMap(r=>[r.fact,r.plan]),1);const w=650,h=280,pad=44,base=h-42,innerW=w-pad-20;const barW=16,groupW=innerW/rows.length;let svg=`<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" preserveAspectRatio="none">`;for(let i=0;i<=4;i++){const y=base-(base-pad)*i/4;svg+=`<line x1="${pad}" y1="${y}" x2="${w-12}" y2="${y}" stroke="#dcebe6" stroke-dasharray="5 7"/><text x="8" y="${y+5}" font-size="15" fill="#66857a">${Math.round(max*i/4).toLocaleString("ru-RU")}</text>`}rows.forEach((r,i)=>{const x=pad+i*groupW+groupW/2-22;const hf=(base-pad)*(r.fact/max),hp=(base-pad)*(r.plan/max);svg+=`<rect x="${x}" y="${base-hf}" width="${barW}" height="${hf}" rx="6" fill="#5ca99a"/><rect x="${x+barW+8}" y="${base-hp}" width="${barW}" height="${hp}" rx="6" fill="#2f7d5a"/><text x="${x-4}" y="${h-14}" font-size="15" fill="#66857a">${r.year}</text>`});svg+="</svg>";document.getElementById("yearBars").innerHTML=svg}
+function renderLineChart(){const map=monthlyTotals();const keys=Object.keys(map).sort();let cumulative=0;const points=keys.map(k=>{cumulative+=map[k];return{k,v:cumulative}});const box=document.getElementById("lineChart");if(points.length===0){box.innerHTML="<p class='sub'>Пока нет пополнений для графика</p>";return}const w=650,h=285,pad=44,base=h-42,max=Math.max(...points.map(p=>p.v),1);const xFor=i=>pad+(w-pad-18)*(points.length===1?.5:i/(points.length-1));const yFor=v=>base-(base-pad)*(v/max);let svg=`<svg viewBox="0 0 ${w} ${h}" width="100%" height="100%" preserveAspectRatio="none">`;for(let i=0;i<=4;i++){const y=base-(base-pad)*i/4;svg+=`<line x1="${pad}" y1="${y}" x2="${w-12}" y2="${y}" stroke="#dcebe6" stroke-dasharray="5 7"/><text x="8" y="${y+5}" font-size="15" fill="#66857a">${Math.round(max*i/4).toLocaleString("ru-RU")}</text>`}const d=points.map((p,i)=>(i?"L":"M")+xFor(i)+" "+yFor(p.v)).join(" ");const area=d+` L ${xFor(points.length-1)} ${base} L ${xFor(0)} ${base} Z`;svg+=`<path d="${area}" fill="#2f7d5a" opacity=".10"/><path d="${d}" fill="none" stroke="#2f7d5a" stroke-width="4" stroke-linecap="round"/>`;points.forEach((p,i)=>{svg+=`<circle cx="${xFor(i)}" cy="${yFor(p.v)}" r="4" fill="#2f7d5a"/>`});const labels=[points[0],points[Math.floor((points.length-1)/2)],points[points.length-1]];labels.forEach((p,idx)=>{const x=idx===0?pad:idx===1?w/2:w-115;svg+=`<text x="${x}" y="${h-10}" font-size="16" fill="#66857a">${monthLabel(p.k)}</text>`});svg+="</svg>";box.innerHTML=svg}
+function renderDonut(){const by={};state.tx.forEach(t=>{by[t.currency]=(by[t.currency]||0)+txBase(t)});const entries=Object.entries(by).sort((a,b)=>b[1]-a[1]);const total=entries.reduce((s,e)=>s+e[1],0);document.getElementById("donutTotal").textContent=fmtMoney(total);const colors=["#2f7d5a","#5ca99a","#8fc6b9","#b7d8cf","#dbeae5","#a0b7af"];let start=0,parts=[];entries.forEach(([c,v],i)=>{const deg=total?v/total*360:0;parts.push(`${colors[i%colors.length]} ${start}deg ${start+deg}deg`);start+=deg});document.getElementById("currencyDonut").style.background=entries.length?`conic-gradient(${parts.join(",")})`:"#dfeae6";document.getElementById("currencyBreakdown").innerHTML=entries.map(([c,v])=>`<div class="entry"><div><div class="entryAmount">${byCode[c]?.flag||"•"} ${c}</div><div class="entryMeta">${byCode[c]?.name||""}</div></div><div class="entryBase">${fmtMoney(v)}</div></div>`).join("")||"<p class='sub'>Нет данных</p>";document.getElementById("totalRecords").textContent=state.tx.length;const biggest=[...state.tx].sort((a,b)=>n(b.amount)-n(a.amount))[0];document.getElementById("biggestTx").textContent=biggest?fmtMoney(biggest.amount,biggest.currency):"0"}
+function renderRecent(){const html=sortedTx().map(t=>{const i=state.tx.indexOf(t);return `<div class="entry"><div><div class="entryAmount">${fmtMoney(t.amount,t.currency)}</div><div class="entryMeta">${fmtDate(t.date)}<br>${t.note||"Пополнение"}<br>Курс: 1 ${t.currency} = ${state.rates[t.currency]||0} ${state.goal.currency}</div></div><div><div class="entryBase">${fmtMoney(txBase(t))}</div><button class="smallDel" type="button" onclick="deleteTx(${i})">Удалить</button></div></div>`}).join("");document.getElementById("recentAdd").innerHTML=html||"<p class='sub'>Пополнений пока нет</p>"}
+function renderCurrencies(){const list=document.getElementById("currencyList");const search=(document.getElementById("currencySearch").value||"").toLowerCase();const filter=document.getElementById("currencyFilter").value;const source=filter==="all"?CURRENCIES.map(c=>c[0]):state.activeCurrencies;const codes=source.filter(c=>{const item=byCode[c];if(!item)return false;return !search||c.toLowerCase().includes(search)||item.name.toLowerCase().includes(search)});list.innerHTML=codes.map(c=>{const item=byCode[c],rate=state.rates[c]??(c===state.goal.currency?1:0);return `<div class="currencyCard"><div class="flag">${item.flag}</div><div><div class="code">${c}</div><div class="name">${item.name}</div></div><div class="rateWrap"><div class="rateLabel">Курс к ${state.goal.currency}</div><input class="rateInput" type="number" inputmode="decimal" step="0.000001" value="${rate}" oninput="updateRate('${c}',this.value)"></div><div class="updated">Обновлено<br>${new Date().toLocaleDateString("ru-RU")} ${new Date().toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"})}</div><button class="more" type="button" onclick="removeCurrency('${c}')">⋮</button></div>`}).join("")||"<p class='sub'>Валюта не найдена</p>";document.getElementById("txRateLabel").textContent=`Курс ${document.getElementById("txCurrency").value||"HUF"} → ${state.goal.currency}`}
+setup();
+</script>
+</body>
+</html>
